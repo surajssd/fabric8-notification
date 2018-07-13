@@ -3,7 +3,9 @@ package token
 import (
 	"context"
 	"errors"
+
 	"github.com/fabric8-services/fabric8-notification/auth/api"
+
 	errs "github.com/fabric8-services/fabric8-wit/errors"
 	"github.com/fabric8-services/fabric8-wit/goasupport"
 	"github.com/fabric8-services/fabric8-wit/log"
@@ -49,10 +51,10 @@ func getServiceAccountToken(ctx context.Context, client *api.Client, serviceAcco
 		GrantType:    "client_credentials",
 	}
 	resp, err := client.ExchangeToken(goasupport.ForwardContextRequestID(ctx), api.ExchangeTokenPath(), &payload, "application/x-www-form-urlencoded")
-
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if err != nil {
 		log.Error(ctx, map[string]interface{}{

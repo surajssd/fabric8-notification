@@ -56,7 +56,6 @@ func getPublicKey(url string) (*kcEnv, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 
 	buf := new(bytes.Buffer)

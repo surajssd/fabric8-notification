@@ -2,12 +2,12 @@ package wit
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
-	"fmt"
-
 	"github.com/fabric8-services/fabric8-notification/wit/api"
+
 	"github.com/fabric8-services/fabric8-wit/goasupport"
 	goaclient "github.com/goadesign/goa/client"
 	"github.com/goadesign/goa/uuid"
@@ -32,9 +32,10 @@ func NewCachedClient(hostURL string) (*api.Client, error) {
 
 func GetWorkItem(ctx context.Context, client *api.Client, wiID uuid.UUID) (*api.WorkItemSingle, error) {
 	resp, err := client.ShowWorkitem(goasupport.ForwardContextRequestID(ctx), api.ShowWorkitemPath(wiID), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET workitem", resp.StatusCode)
@@ -48,9 +49,10 @@ func GetWorkItem(ctx context.Context, client *api.Client, wiID uuid.UUID) (*api.
 
 func GetArea(ctx context.Context, client *api.Client, areaID uuid.UUID) (*api.AreaSingle, error) {
 	resp, err := client.ShowArea(goasupport.ForwardContextRequestID(ctx), api.ShowAreaPath(areaID.String()), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET space", resp.StatusCode)
@@ -64,9 +66,10 @@ func GetArea(ctx context.Context, client *api.Client, areaID uuid.UUID) (*api.Ar
 
 func GetWorkItemType(ctx context.Context, client *api.Client, witID uuid.UUID) (*api.WorkItemTypeSingle, error) {
 	resp, err := client.ShowWorkitemtype(goasupport.ForwardContextRequestID(ctx), api.ShowWorkitemtypePath(witID), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET workitemtype", resp.StatusCode)
@@ -80,9 +83,10 @@ func GetWorkItemType(ctx context.Context, client *api.Client, witID uuid.UUID) (
 
 func GetComment(ctx context.Context, client *api.Client, cID uuid.UUID) (*api.CommentSingle, error) {
 	resp, err := client.ShowComments(goasupport.ForwardContextRequestID(ctx), api.ShowCommentsPath(cID), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET comment", resp.StatusCode)
@@ -99,9 +103,10 @@ func GetComments(ctx context.Context, client *api.Client, wiID uuid.UUID) (*api.
 	pageOffset := "0"
 
 	resp, err := client.ListWorkItemComments(goasupport.ForwardContextRequestID(ctx), api.ListWorkItemCommentsPath(wiID), &pageLimit, &pageOffset, nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET comments", resp.StatusCode)
@@ -115,9 +120,10 @@ func GetComments(ctx context.Context, client *api.Client, wiID uuid.UUID) (*api.
 
 func GetSpace(ctx context.Context, client *api.Client, spaceID uuid.UUID) (*api.SpaceSingle, error) {
 	resp, err := client.ShowSpace(goasupport.ForwardContextRequestID(ctx), api.ShowSpacePath(spaceID), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET space", resp.StatusCode)
@@ -143,9 +149,10 @@ func GetSpaces(ctx context.Context, client *api.Client, spaceIDs []uuid.UUID) ([
 
 func GetCodebases(ctx context.Context, client *api.Client, url string) (*api.CodebaseList, error) {
 	resp, err := client.CodebasesSearch(context.Background(), api.CodebasesSearchPath(), url, nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET space", resp.StatusCode)
 	}

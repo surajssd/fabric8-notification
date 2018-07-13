@@ -2,13 +2,13 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
-
-	"fmt"
 	"strconv"
 
 	"github.com/fabric8-services/fabric8-notification/auth/api"
+
 	"github.com/fabric8-services/fabric8-wit/goasupport"
 	"github.com/goadesign/goa/uuid"
 )
@@ -25,13 +25,9 @@ func (c *AuthCollector) GetSpaceCollaborators(ctx context.Context, client *api.C
 	pageOffset := "0"
 	resp, err := listCollaborators(goasupport.ForwardContextRequestID(ctx), client, api.ListCollaboratorsPath(spaceID), &pageLimit, &pageOffset, nil, nil)
 	if err != nil {
-		return nil, err
-	}
-	if resp != nil {
-		defer resp.Body.Close()
-	} else {
 		return nil, fmt.Errorf("failed to make request to get list of collaborators")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET collaborators", resp.StatusCode)

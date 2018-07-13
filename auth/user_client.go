@@ -2,12 +2,12 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
-	"fmt"
-
 	"github.com/fabric8-services/fabric8-notification/auth/api"
+
 	"github.com/fabric8-services/fabric8-wit/goasupport"
 	"github.com/goadesign/goa/uuid"
 )
@@ -23,9 +23,10 @@ import (
 
 func GetUser(ctx context.Context, client *api.Client, uID uuid.UUID) (*api.User, error) {
 	resp, err := showUsers(goasupport.ForwardContextRequestID(ctx), client, api.ShowUsersPath(uID.String()), nil, nil)
-	if resp != nil {
-		defer resp.Body.Close()
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("non %v status code for %v, returned %v", http.StatusOK, "GET user", resp.StatusCode)

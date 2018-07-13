@@ -25,7 +25,7 @@ const (
 
 func main() {
 	c, err := wit.NewCachedClient(OpenshiftIOAPI)
-	authClient, err := auth.NewCachedClient(OpenshiftIOAPI)
+	authClient, err := auth.NewCachedClient(AuthOpenShiftIOAPI)
 	if err != nil {
 		panic(err)
 	}

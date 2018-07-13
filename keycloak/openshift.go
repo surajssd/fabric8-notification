@@ -60,7 +60,6 @@ func get(url, token string) (*usertoken, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 
 	buf := new(bytes.Buffer)
