@@ -1,3 +1,87 @@
-== Fabric8 Notification service
+= Fabric8 Notification service
+:toc:
+:toclevels: 5
+:sectnums:
+:sectnumlevels: 4
+:toc-placement: preamble
 
+image:https://ci.centos.org/buildStatus/icon?job=devtools-fabric8-notification-build-master[Jenkins,link="https://ci.centos.org/view/Devtools/job/devtools-fabric8-notification-build-master/lastBuild/"]
+image:https://goreportcard.com/badge/github.com/fabric8-services/fabric8-notification[Go Report Card, link="https://goreportcard.com/report/github.com/fabric8-services/fabric8-notification"]
+image:https://godoc.org/github.com/fabric8-services/fabric8-notification?status.png[GoDoc,link="https://godoc.org/github.com/fabric8-services/fabric8-notification"]
+image:https://codecov.io/gh/fabric8-services/fabric8-notification/branch/master/graph/badge.svg[Codecov.io,link="https://codecov.io/gh/fabric8-services/fabric8-notification"]
 
+This service takes care of sending email notification for different Notification Type.
+
+=== Contributes
+
+==== Project Structure
+
+This project is build around Notification Type in center.
+
+To register new notification type and to see list of exisitng notification type check in https://github.com/fabric8-services/fabric8-notification/blob/master/main.go[main.go]
+
+===== Introducing New / Ehnancing Existing - Notification Type
+
+For each kind of Notification, there is one **Notification Type** is defined.  This section will give details on what are the components of Notification Type which helps to introduce new Notification Type or Enhance existing one.
+
+====== Register
+
+New Notification Type can be registered as below,
+
+```
+resolvers.Register("analytics.notify.cve", collector.ConfiguredVars(config, collector.NewCVEResolver(authClient, witClient)), nil)
+```
+
+- First arg, Notification Type name (string), here it is "analytics.notify.cve".  You need to come up with unique Notification Type name depending on what kind of New Notificatoin you want to support.  Later value of this will be used to get registered Resolver and Validator in NotifyController.Send() 
+- Second arg, ReceiverResolver, it is used to find out list of users to which email should be sent when Notificatin arrives for given Notification Type, more on this later.
+- Third arg, ParamValidator, it is used to validate parameter received in Notification payload.
+
+====== Resolver
+
+ReceiverResolver is responsible to return list of email to which notification sent for given Notification Type.  Resolver will get `ID` attribute as input.
+
+The value of `ID` attibute should be decided such that the related emails can be fetched.
+For ex, to find notification email list for `workitem.create` https://github.com/fabric8-services/fabric8-notification/blob/master/collector/workitem.go[workitem.go] type, one would like to get `Workitem.ID` for newly created workitem.
+
+You can also decide to set `ID` with value of `codebase_url` for `analytics.notify.cve` https://github.com/fabric8-services/fabric8-notification/blob/master/collector/cve.go[cve.go] type as with url one can find users who have registred for CVE notification on given Codebase URL.
+
+Resolver will generally get initialized with 'WIT Client' and 'Auth Client' which will be used to query data based on `ID` to get notification email list.
+
+====== Template
+
+This is about email template which include email body, subject, headers etc.  All email templates are maintained in https://github.com/fabric8-services/fabric8-notification/tree/master/template[template] folder.  For each Notification Type there is one folder with its name.
+
+- body.html - mandatory file which should have email body.  It uses golang template https://golang.org/pkg/text/template/[link].
+- subject.txt - mandatory file which should have subject like for email.  It uses golang template https://golang.org/pkg/text/template/[link].
+
+==== Build Project
+
+This project use glide build system.
+
+===== Prerequisites
+
+One should have go, git, mercurial, make installed on the system.
+
+===== make commands for local development
+
+====== make all - build everything
+
+Run `make all` to build the whole project.  After this one can find executable created at **./bin/fabric8-notification** and run the same to run the Notification service locally.
+
+While running locally, you need to set `mandrill.apikey` configuration param.  This param used in sending notification email.  While doing local devl and testing, you can skip send_email part and thus comment in main.go which validate this param.
+
+====== make preview - test email generation against template
+
+Run `make preview` to run https://github.com/fabric8-services/fabric8-notification/blob/master/preview/main.go[preview/main.go].  This will execute all template generation defined in main.go file.  This is useful when you want to check output of you template.  The output email will be stored at **./tmp/** folder with file name having Notification Type name as prefix.
+
+====== make test-unit-no-coverage - execute unit tests
+
+Run `make test-unit-no-coverage` to run unit tests without coverage.
+
+====== make clean
+
+Run `make clean` clean all artificates generated during build.  This is not removing **./tmp/** folder.
+
+===== Updating WIT/Auth API dependency
+
+This project uses WIT/Auth Client API.  Time to time WIT/Auth project dependency should be changed in glide files to get latest WIT/Auth API.
