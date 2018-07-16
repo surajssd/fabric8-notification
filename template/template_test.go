@@ -12,6 +12,7 @@ import (
 	"github.com/fabric8-services/fabric8-notification/collector"
 	"github.com/fabric8-services/fabric8-notification/template"
 	"github.com/fabric8-services/fabric8-notification/testsupport"
+	"github.com/fabric8-services/fabric8-notification/types"
 	"github.com/fabric8-services/fabric8-notification/wit"
 	witApi "github.com/fabric8-services/fabric8-notification/wit/api"
 	"github.com/goadesign/goa/uuid"
@@ -44,7 +45,7 @@ func createClient(t *testing.T) (*witApi.Client, *authApi.Client) {
 func TestTrueOnFoundName(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	_, exist := reg.Get("workitem.update")
+	_, exist := reg.Get(string(types.WorkitemUpdate))
 	assert.True(t, exist)
 }
 
@@ -58,7 +59,7 @@ func TestFalseOnMissingName(t *testing.T) {
 func TestRenderWorkitemCreate(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("workitem.create")
+	temp, exist := reg.Get(string(types.WorkitemCreate))
 	assert.True(t, exist)
 
 	witClient, authClient := createClient(t)
@@ -92,7 +93,7 @@ func TestRenderWorkitemCreate(t *testing.T) {
 func TestRenderWorkitemCreateMissingDescription(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("workitem.create")
+	temp, exist := reg.Get(string(types.WorkitemCreate))
 	assert.True(t, exist)
 
 	witClient, authClient := createClient(t)
@@ -129,7 +130,7 @@ func TestRenderWorkitemCreateMissingDescription(t *testing.T) {
 func TestRenderWorkitemUpdate(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("workitem.update")
+	temp, exist := reg.Get(string(types.WorkitemUpdate))
 	assert.True(t, exist)
 
 	witClient, authClient := createClient(t)
@@ -162,7 +163,7 @@ func TestRenderWorkitemUpdate(t *testing.T) {
 func TestRenderCommentCreate(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("comment.create")
+	temp, exist := reg.Get(string(types.CommentCreate))
 	assert.True(t, exist)
 
 	witClient, authClient := createClient(t)
@@ -196,7 +197,7 @@ func TestRenderCommentCreate(t *testing.T) {
 func TestRenderCommentUpdate(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("comment.update")
+	temp, exist := reg.Get(string(types.CommentUpdate))
 	assert.True(t, exist)
 
 	witClient, authClient := createClient(t)
@@ -230,7 +231,7 @@ func TestRenderCommentUpdate(t *testing.T) {
 func TestRenderEmailUpdate(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	temp, exist := reg.Get("user.email.update")
+	temp, exist := reg.Get(string(types.UserEmailUpdate))
 	assert.True(t, exist)
 
 	_, authClient := createClient(t)
@@ -255,7 +256,7 @@ func TestRenderEmailUpdate(t *testing.T) {
 func TestRenderInvitationSpaceNoorg(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	template, exist := reg.Get("invitation.space.noorg")
+	template, exist := reg.Get(string(types.InvitationSpaceNoorg))
 	assert.True(t, exist)
 
 	vars := map[string]interface{}{}
@@ -277,7 +278,7 @@ func TestRenderInvitationSpaceNoorg(t *testing.T) {
 func TestRenderInvitationTeamNoorg(t *testing.T) {
 	reg := template.AssetRegistry{}
 
-	template, exist := reg.Get("invitation.team.noorg")
+	template, exist := reg.Get(string(types.InvitationTeamNoorg))
 	assert.True(t, exist)
 
 	vars := map[string]interface{}{}
@@ -300,7 +301,7 @@ func TestRenderCVE(t *testing.T) {
 	files := []string{"cve.basic", "cve.many"}
 
 	reg := template.AssetRegistry{}
-	template, exist := reg.Get("analytics.notify.cve")
+	template, exist := reg.Get(string(types.AnalyticsNotifyCVE))
 	assert.True(t, exist)
 
 	for _, file := range files {

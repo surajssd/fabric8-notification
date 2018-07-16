@@ -1,6 +1,10 @@
 package collector
 
-import "context"
+import (
+	"context"
+
+	"github.com/fabric8-services/fabric8-notification/types"
+)
 
 type ReceiverResolver func(context.Context, string) (users []Receiver, templateValues map[string]interface{}, err error)
 type ParamValidator func(context.Context, map[string]interface{}) error
@@ -11,32 +15,41 @@ type Receiver struct {
 }
 
 type Registry interface {
-	Get(string) (ReceiverResolver, bool)
-	Validator(string) (ParamValidator, bool)
+	Register(types.NotificationType, ReceiverResolver, ParamValidator)
+	Get(types.NotificationType) (ReceiverResolver, bool)
+	Validator(types.NotificationType) (ParamValidator, bool)
+	Notifiers(types.NotificationType) []string
 }
 
-type LocalRegistry struct {
-	reg        map[string]ReceiverResolver
-	validators map[string]ParamValidator
+type localRegistry struct {
+	reg        map[types.NotificationType]ReceiverResolver
+	validators map[types.NotificationType]ParamValidator
 }
 
-func (r *LocalRegistry) Get(nType string) (ReceiverResolver, bool) {
+func NewRegistry() Registry {
+	return &localRegistry{
+		reg:        map[types.NotificationType]ReceiverResolver{},
+		validators: map[types.NotificationType]ParamValidator{},
+	}
+}
+
+func (r *localRegistry) Get(nType types.NotificationType) (ReceiverResolver, bool) {
 	res, b := r.reg[nType]
 	return res, b
 }
 
-func (r *LocalRegistry) Validator(nType string) (ParamValidator, bool) {
+func (r *localRegistry) Validator(nType types.NotificationType) (ParamValidator, bool) {
 	v, found := r.validators[nType]
 	return v, found
 }
 
-func (r *LocalRegistry) Register(nType string, resolver ReceiverResolver, validator ParamValidator) {
-	if r.reg == nil {
-		r.reg = map[string]ReceiverResolver{}
-	}
-	r.reg[nType] = resolver
-	if r.validators == nil {
-		r.validators = map[string]ParamValidator{}
+func (r *localRegistry) Notifiers(nType types.NotificationType) []string {
+	return nType.Notifiers()
+}
+
+func (r *localRegistry) Register(nType types.NotificationType, resolver ReceiverResolver, validator ParamValidator) {
+	if resolver != nil {
+		r.reg[nType] = resolver
 	}
 	if validator != nil {
 		r.validators[nType] = validator

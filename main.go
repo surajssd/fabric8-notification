@@ -7,6 +7,7 @@ import (
 	"github.com/fabric8-services/fabric8-notification/app"
 	"github.com/fabric8-services/fabric8-notification/auth"
 	"github.com/fabric8-services/fabric8-notification/collector"
+	"github.com/fabric8-services/fabric8-notification/types"
 	goaclient "github.com/goadesign/goa/client"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -102,17 +103,17 @@ func main() {
 
 	notifier := email.NewAsyncWorkerNotifier(sender, 10)
 
-	resolvers := &collector.LocalRegistry{}
-	resolvers.Register("workitem.create", collector.ConfiguredVars(config, collector.NewWorkItemResolver(authClient, witClient)), nil)
-	resolvers.Register("workitem.update", collector.ConfiguredVars(config, collector.NewWorkItemResolver(authClient, witClient)), nil)
-	resolvers.Register("comment.create", collector.ConfiguredVars(config, collector.NewCommentResolver(authClient, witClient)), nil)
-	resolvers.Register("comment.update", collector.ConfiguredVars(config, collector.NewCommentResolver(authClient, witClient)), nil)
-	resolvers.Register("user.email.update", collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), validator.ValidateUser)
-	resolvers.Register("invitation.team.noorg", collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), nil)
-	resolvers.Register("invitation.space.noorg", collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), nil)
-	resolvers.Register("analytics.notify.cve", collector.ConfiguredVars(config, collector.NewCVEResolver(authClient, witClient)), nil)
+	registry := collector.NewRegistry()
+	registry.Register(types.WorkitemCreate, collector.ConfiguredVars(config, collector.NewWorkItemResolver(authClient, witClient)), nil)
+	registry.Register(types.WorkitemUpdate, collector.ConfiguredVars(config, collector.NewWorkItemResolver(authClient, witClient)), nil)
+	registry.Register(types.CommentCreate, collector.ConfiguredVars(config, collector.NewCommentResolver(authClient, witClient)), nil)
+	registry.Register(types.CommentUpdate, collector.ConfiguredVars(config, collector.NewCommentResolver(authClient, witClient)), nil)
+	registry.Register(types.UserEmailUpdate, collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), validator.ValidateUser)
+	registry.Register(types.InvitationTeamNoorg, collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), nil)
+	registry.Register(types.InvitationSpaceNoorg, collector.ConfiguredVars(config, collector.NewUserResolver(authClient)), nil)
+	registry.Register(types.AnalyticsNotifyCVE, collector.ConfiguredVars(config, collector.NewCVEResolver(authClient, witClient)), nil)
 
-	typeRegistry := &template.AssetRegistry{}
+	templateRegistry := &template.AssetRegistry{}
 	service := goa.New("notification")
 
 	// Mount middleware
@@ -131,7 +132,7 @@ func main() {
 	app.MountStatusController(service, statusCtrl)
 
 	// Mount "notification" controller
-	notifyCtrl := controller.NewNotifyController(service, resolvers, typeRegistry, notifier)
+	notifyCtrl := controller.NewNotifyController(service, registry, templateRegistry, notifier)
 	app.MountNotifyController(service, notifyCtrl)
 
 	log.Logger().Infoln("Git Commit SHA: ", controller.Commit)

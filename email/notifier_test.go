@@ -6,6 +6,7 @@ import (
 
 	"github.com/fabric8-services/fabric8-notification/collector"
 	"github.com/fabric8-services/fabric8-notification/template"
+	"github.com/fabric8-services/fabric8-notification/types"
 )
 
 type TestSender struct {
@@ -27,7 +28,7 @@ func TestAsyncWorkerNotifier(t *testing.T) {
 	sender := &TestSender{callback: callback}
 	notifier := NewAsyncWorkerNotifier(sender, 1)
 
-	notifier.Send(context.Background(), Notification{ID: "TEST", CustomAttributes: map[string]interface{}{}, Type: "workitem.create", Resolver: resolver, Template: template.Template{}})
+	notifier.Send(context.Background(), Notification{ID: "TEST", CustomAttributes: map[string]interface{}{}, Type: string(types.WorkitemCreate), Resolver: resolver, Template: template.Template{}})
 
 	<-sender.callback
 }
