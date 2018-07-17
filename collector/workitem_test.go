@@ -11,6 +11,7 @@ import (
 	"github.com/fabric8-services/fabric8-notification/testsupport"
 	"github.com/fabric8-services/fabric8-notification/wit"
 	witApi "github.com/fabric8-services/fabric8-notification/wit/api"
+
 	"github.com/goadesign/goa/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,7 +40,11 @@ func TestWorkItem(t *testing.T) {
 	witClient, authClient := createClient(t)
 	wiID, _ := uuid.FromString("8bccc228-bba7-43ad-b077-15fbb9148f7f")
 
-	users, vars, err := collector.WorkItem(context.Background(), authClient, witClient, &testsupport.DummyCollaboratorCollector{}, wiID)
+	users, vars, err := collector.WorkItem(
+		context.Background(),
+		authClient, witClient,
+		&testsupport.DummyCollaboratorCollector{},
+		wiID, uuid.NewV4())
 	require.NoError(t, err)
 
 	assertWorkItemVars(t, vars)
@@ -57,7 +62,11 @@ func TestWorkItemUnverifiedEmails(t *testing.T) {
 	witClient, authClient := createClient(t)
 	wiID, _ := uuid.FromString("8bccc228-bba7-43ad-b077-15fbb9148f7f")
 
-	users, vars, err := collector.WorkItem(context.Background(), authClient, witClient, &testsupport.DummyCollaboratorCollector{}, wiID)
+	users, vars, err := collector.WorkItem(
+		context.Background(),
+		authClient, witClient,
+		&testsupport.DummyCollaboratorCollector{},
+		wiID, uuid.NewV4())
 	require.NoError(t, err)
 
 	assertWorkItemVars(t, vars)

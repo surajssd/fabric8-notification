@@ -15,6 +15,7 @@ import (
 	"github.com/fabric8-services/fabric8-notification/types"
 	"github.com/fabric8-services/fabric8-notification/wit"
 	witApi "github.com/fabric8-services/fabric8-notification/wit/api"
+
 	"github.com/goadesign/goa/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -65,7 +66,11 @@ func TestRenderWorkitemCreate(t *testing.T) {
 	witClient, authClient := createClient(t)
 	wiID, _ := uuid.FromString("8bccc228-bba7-43ad-b077-15fbb9148f7f")
 
-	_, vars, err := collector.WorkItem(context.Background(), authClient, witClient, &testsupport.DummyCollaboratorCollector{}, wiID)
+	_, vars, err := collector.WorkItem(
+		context.Background(),
+		authClient, witClient,
+		&testsupport.DummyCollaboratorCollector{},
+		wiID, uuid.NewV4())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +104,11 @@ func TestRenderWorkitemCreateMissingDescription(t *testing.T) {
 	witClient, authClient := createClient(t)
 	wiID, _ := uuid.FromString("8bccc228-bba7-43ad-b077-15fbb9148f7f")
 
-	_, vars, err := collector.WorkItem(context.Background(), authClient, witClient, &testsupport.DummyCollaboratorCollector{}, wiID)
+	_, vars, err := collector.WorkItem(
+		context.Background(),
+		authClient, witClient,
+		&testsupport.DummyCollaboratorCollector{},
+		wiID, uuid.NewV4())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +145,11 @@ func TestRenderWorkitemUpdate(t *testing.T) {
 	witClient, authClient := createClient(t)
 	wiID, _ := uuid.FromString("8bccc228-bba7-43ad-b077-15fbb9148f7f")
 
-	_, vars, err := collector.WorkItem(context.Background(), authClient, witClient, &testsupport.DummyCollaboratorCollector{}, wiID)
+	_, vars, err := collector.WorkItem(
+		context.Background(),
+		authClient, witClient,
+		&testsupport.DummyCollaboratorCollector{},
+		wiID, uuid.NewV4())
 	if err != nil {
 		t.Fatal(err)
 	}

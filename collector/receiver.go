@@ -4,9 +4,13 @@ import (
 	"context"
 
 	"github.com/fabric8-services/fabric8-notification/types"
+
+	"github.com/goadesign/goa/uuid"
 )
 
-type ReceiverResolver func(context.Context, string) (users []Receiver, templateValues map[string]interface{}, err error)
+type ReceiverResolver func(
+	context.Context, string, uuid.UUID,
+) (users []Receiver, templateValues map[string]interface{}, err error)
 type ParamValidator func(context.Context, map[string]interface{}) error
 
 type Receiver struct {

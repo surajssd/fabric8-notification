@@ -9,7 +9,9 @@ import (
 )
 
 func NewUserResolver(c *api.Client) ReceiverResolver {
-	return func(ctx context.Context, id string) ([]Receiver, map[string]interface{}, error) {
+	return func(
+		ctx context.Context, id string, revisionID uuid.UUID,
+	) ([]Receiver, map[string]interface{}, error) {
 		userID, err := uuid.FromString(id)
 		if err != nil {
 			return []Receiver{}, nil, fmt.Errorf("unable to lookup user based on id %v", id)

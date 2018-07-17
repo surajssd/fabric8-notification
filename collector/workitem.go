@@ -15,7 +15,9 @@ import (
 )
 
 func NewCommentResolver(authclient *authapi.Client, c *api.Client) ReceiverResolver {
-	return func(ctx context.Context, id string) ([]Receiver, map[string]interface{}, error) {
+	return func(
+		ctx context.Context, id string, revisionID uuid.UUID,
+	) ([]Receiver, map[string]interface{}, error) {
 		cID, err := uuid.FromString(id)
 		if err != nil {
 			return []Receiver{}, nil, fmt.Errorf("unable to lookup comment based on id %v", id)
@@ -25,12 +27,14 @@ func NewCommentResolver(authclient *authapi.Client, c *api.Client) ReceiverResol
 }
 
 func NewWorkItemResolver(authclient *authapi.Client, c *api.Client) ReceiverResolver {
-	return func(ctx context.Context, id string) ([]Receiver, map[string]interface{}, error) {
+	return func(
+		ctx context.Context, id string, revisionID uuid.UUID,
+	) ([]Receiver, map[string]interface{}, error) {
 		wID, err := uuid.FromString(id)
 		if err != nil {
 			return []Receiver{}, nil, fmt.Errorf("unable to lookup Workitem based on id %v", id)
 		}
-		return WorkItem(ctx, authclient, c, nil, wID)
+		return WorkItem(ctx, authclient, c, nil, wID, revisionID)
 	}
 }
 
@@ -137,7 +141,14 @@ func Comment(ctx context.Context, authClient *authapi.Client, c *api.Client, col
 	return resolved, values, nil
 }
 
-func WorkItem(ctx context.Context, authclient *authapi.Client, c *api.Client, collaboratorCollector auth.CollaboratorCollector, wiID uuid.UUID) ([]Receiver, map[string]interface{}, error) {
+func WorkItem(
+	ctx context.Context,
+	authclient *authapi.Client,
+	c *api.Client,
+	collaboratorCollector auth.CollaboratorCollector,
+	wiID, revisionID uuid.UUID,
+) ([]Receiver, map[string]interface{}, error) {
+
 	if collaboratorCollector == nil {
 		collaboratorCollector = &auth.AuthCollector{}
 	}
@@ -217,11 +228,40 @@ func WorkItem(ctx context.Context, authclient *authapi.Client, c *api.Client, co
 		resolved = removeActorFromReceivers(ctx, resolved)
 	}
 
+	revisions, err := eventsForWorkItem(ctx, c, wiID, revisionID)
+	if err != nil {
+		errors = append(errors, err)
+	}
+	if len(revisions) > 0 {
+		values["revisions"] = revisions
+	}
+
 	if len(errors) > 0 {
 		return resolved, values, multiError{Message: "errors during notification resolving", Errors: errors}
 	}
 
 	return resolved, values, nil
+}
+
+func eventsForWorkItem(
+	ctx context.Context,
+	client *api.Client,
+	wiID, revisionID uuid.UUID,
+) ([]*api.Event, error) {
+
+	eventsList, err := wit.GetWorkItemEvents(ctx, client, wiID)
+	if err != nil {
+		return nil, err
+	}
+
+	var events []*api.Event
+	for _, e := range eventsList.Data {
+		if e.ID.String() == revisionID.String() {
+			events = append(events, e)
+		}
+	}
+
+	return events, nil
 }
 
 func resolveAllUsers(ctx context.Context, c *authapi.Client, users []uuid.UUID, collaborators []*authapi.UserData, sendToUnverifiedEmails bool) ([]Receiver, error) {

@@ -13,6 +13,8 @@ import (
 	"github.com/fabric8-services/fabric8-notification/testsupport"
 	"github.com/fabric8-services/fabric8-notification/wit"
 	witApi "github.com/fabric8-services/fabric8-notification/wit/api"
+
+	"github.com/goadesign/goa/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,7 +42,7 @@ func TestCVEResolver(t *testing.T) {
 
 	cveResolver := collector.NewCVEResolver(authClient, witClient)
 	codebaseURL := "git@github.com:testrepo/testproject1.git"
-	recvs, _, err := cveResolver(context.Background(), codebaseURL)
+	recvs, _, err := cveResolver(context.Background(), codebaseURL, uuid.NewV4())
 
 	assert.Nil(t, err)
 	assert.NotNil(t, recvs)

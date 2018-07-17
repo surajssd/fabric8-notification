@@ -5,7 +5,9 @@ import (
 
 	"github.com/fabric8-services/fabric8-notification/collector"
 	"github.com/fabric8-services/fabric8-notification/template"
+
 	"github.com/fabric8-services/fabric8-wit/log"
+	"github.com/goadesign/goa/uuid"
 )
 
 type contextualNotification struct {
@@ -16,6 +18,7 @@ type contextualNotification struct {
 type Notification struct {
 	Type             string
 	ID               string
+	RevisionID       uuid.UUID
 	CustomAttributes map[string]interface{}
 	Resolver         collector.ReceiverResolver
 	Template         template.Template
@@ -71,7 +74,7 @@ func (a *AsyncWorkerNotifier) work() {
 func (a *AsyncWorkerNotifier) do(cn contextualNotification) {
 	ctx, notification := cn.context, cn.notification
 
-	receivers, vars, err := notification.Resolver(ctx, notification.ID)
+	receivers, vars, err := notification.Resolver(ctx, notification.ID, notification.RevisionID)
 	if err != nil {
 		log.Error(ctx, map[string]interface{}{
 			"type": notification.ID,

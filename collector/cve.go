@@ -10,7 +10,9 @@ import (
 )
 
 func NewCVEResolver(authClient *authapi.Client, witClient *api.Client) ReceiverResolver {
-	return func(ctx context.Context, url string) ([]Receiver, map[string]interface{}, error) {
+	return func(
+		ctx context.Context, url string, revisionID uuid.UUID,
+	) ([]Receiver, map[string]interface{}, error) {
 		codebases, err := wit.GetCodebases(ctx, witClient, url)
 		if err != nil {
 			return nil, nil, err

@@ -4,16 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fabric8-services/fabric8-common/token"
 	"github.com/fabric8-services/fabric8-notification/app"
 	"github.com/fabric8-services/fabric8-notification/collector"
 	"github.com/fabric8-services/fabric8-notification/email"
 	"github.com/fabric8-services/fabric8-notification/jsonapi"
 	"github.com/fabric8-services/fabric8-notification/template"
 	"github.com/fabric8-services/fabric8-notification/types"
+
+	"github.com/fabric8-services/fabric8-common/token"
 	"github.com/fabric8-services/fabric8-wit/errors"
 	"github.com/fabric8-services/fabric8-wit/log"
 	"github.com/goadesign/goa"
+	"github.com/goadesign/goa/uuid"
 )
 
 // NotifyController implements the notify resource.
@@ -67,8 +69,21 @@ func (c *NotifyController) Send(ctx *app.SendNotifyContext) error {
 		return jsonapi.JSONErrorResponse(ctx, errors.NewInternalError(ctx, fmt.Errorf("could not find ReceiverResolver for type %v", nType)))
 	}
 
-	c.Notifier.Send(ctx, email.Notification{ID: nID, Type: nType, CustomAttributes: customAttributes, Resolver: receiverResolver, Template: template})
+	emailNotif := email.Notification{
+		ID:               nID,
+		Type:             nType,
+		CustomAttributes: customAttributes,
+		Resolver:         receiverResolver,
+		Template:         template,
+	}
+	if ctx.Payload.Data.Attributes.RevisionID != nil {
+		revisionID, err := uuid.FromString(ctx.Payload.Data.Attributes.RevisionID.String())
+		if err == nil {
+			emailNotif.RevisionID = revisionID
+		}
+	}
 
+	c.Notifier.Send(ctx, emailNotif)
 	return ctx.Accepted()
 }
 

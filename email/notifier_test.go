@@ -7,6 +7,8 @@ import (
 	"github.com/fabric8-services/fabric8-notification/collector"
 	"github.com/fabric8-services/fabric8-notification/template"
 	"github.com/fabric8-services/fabric8-notification/types"
+
+	"github.com/goadesign/goa/uuid"
 )
 
 type TestSender struct {
@@ -19,7 +21,7 @@ func (t *TestSender) Send(ctx context.Context, subject string, body string, head
 
 func TestAsyncWorkerNotifier(t *testing.T) {
 
-	resolver := func(ctx context.Context, id string) ([]collector.Receiver, map[string]interface{}, error) {
+	resolver := func(ctx context.Context, id string, revisionID uuid.UUID) ([]collector.Receiver, map[string]interface{}, error) {
 		return []collector.Receiver{}, nil, nil
 	}
 

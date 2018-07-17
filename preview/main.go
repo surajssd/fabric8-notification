@@ -33,37 +33,44 @@ func main() {
 
 	type data struct {
 		id           string
+		revisionID   string
 		templateName string
 	}
 
 	var testdata []data
-	testdata = append(testdata, data{"de4871ce-0bfd-4b4b-aee2-e02427f4e38b", string(types.WorkitemCreate)})
-	testdata = append(testdata, data{"43024450-fe8c-4082-8828-88512cebfdb0", string(types.WorkitemCreate)})
-	testdata = append(testdata, data{"3a331aa3-6423-4fd7-85e4-95d7932b168c", string(types.WorkitemCreate)})
-	testdata = append(testdata, data{"d85e19a1-f4aa-486e-a8fe-3211cac9b68f", string(types.WorkitemCreate)})
-	testdata = append(testdata, data{"43024450-fe8c-4082-8828-88512cebfdb0", string(types.WorkitemUpdate)})
+	testdata = append(testdata, data{"de4871ce-0bfd-4b4b-aee2-e02427f4e38b", "", string(types.WorkitemCreate)})
+	testdata = append(testdata, data{"43024450-fe8c-4082-8828-88512cebfdb0", "", string(types.WorkitemCreate)})
+	testdata = append(testdata, data{"3a331aa3-6423-4fd7-85e4-95d7932b168c", "", string(types.WorkitemCreate)})
+	testdata = append(testdata, data{"d85e19a1-f4aa-486e-a8fe-3211cac9b68f", "", string(types.WorkitemCreate)})
+	testdata = append(testdata, data{"43024450-fe8c-4082-8828-88512cebfdb0", "f8b9e70c-d3cf-4496-b2d1-7cb64f74c886", string(types.WorkitemUpdate)})
 
-	testdata = append(testdata, data{"d28f8344-4956-497a-b43b-7f217087a931", string(types.CommentCreate)})
-	testdata = append(testdata, data{"51d968b1-b9e5-4ec1-884a-ff256902c753", string(types.CommentCreate)})
-	testdata = append(testdata, data{"51d968b1-b9e5-4ec1-884a-ff256902c753", string(types.CommentUpdate)})
-	testdata = append(testdata, data{"3383826c-51e4-401b-9ccd-b898f7e2397d", string(types.UserEmailUpdate)})
-	testdata = append(testdata, data{"81d1c3bf-fcf2-4c4e-9d12-f9e5c15fb9ab", string(types.InvitationTeamNoorg)})
-	testdata = append(testdata, data{"297f2037-72e9-42b3-a5fc-76d843877163", string(types.InvitationSpaceNoorg)})
+	testdata = append(testdata, data{"d28f8344-4956-497a-b43b-7f217087a931", "", string(types.CommentCreate)})
+	testdata = append(testdata, data{"51d968b1-b9e5-4ec1-884a-ff256902c753", "", string(types.CommentCreate)})
+	testdata = append(testdata, data{"51d968b1-b9e5-4ec1-884a-ff256902c753", "", string(types.CommentUpdate)})
+	testdata = append(testdata, data{"3383826c-51e4-401b-9ccd-b898f7e2397d", "", string(types.UserEmailUpdate)})
+	testdata = append(testdata, data{"81d1c3bf-fcf2-4c4e-9d12-f9e5c15fb9ab", "", string(types.InvitationTeamNoorg)})
+	testdata = append(testdata, data{"297f2037-72e9-42b3-a5fc-76d843877163", "", string(types.InvitationSpaceNoorg)})
 
-	testdata = append(testdata, data{"0a9c6814-462e-411c-8560-d74297bf1ceb", string(types.AnalyticsNotifyCVE)})
+	testdata = append(testdata, data{"0a9c6814-462e-411c-8560-d74297bf1ceb", "", string(types.AnalyticsNotifyCVE)})
 
 	fmt.Println("Generating test templates..")
 	fmt.Println("")
 
 	for _, d := range testdata {
-		err = generate(authClient, c, d.id, d.templateName)
+		revisionID, _ := uuid.FromString(d.revisionID)
+		err = generate(authClient, c, d.id, d.templateName, revisionID)
 		if err != nil {
 			fmt.Printf(err.Error())
 		}
 	}
 }
 
-func generate(authClient *authapi.Client, c *api.Client, id, tmplName string) error {
+func generate(
+	authClient *authapi.Client,
+	c *api.Client,
+	id, tmplName string,
+	revisionID uuid.UUID) error {
+
 	reg := template.AssetRegistry{}
 
 	temp, exist := reg.Get(tmplName)
@@ -77,7 +84,7 @@ func generate(authClient *authapi.Client, c *api.Client, id, tmplName string) er
 	var err error
 
 	if strings.HasPrefix(tmplName, "workitem") {
-		_, vars, err = collector.WorkItem(context.Background(), authClient, c, nil, wiID)
+		_, vars, err = collector.WorkItem(context.Background(), authClient, c, nil, wiID, revisionID)
 	} else if strings.HasPrefix(tmplName, "comment") {
 		_, vars, err = collector.Comment(context.Background(), authClient, c, nil, wiID)
 	} else if strings.HasPrefix(tmplName, "user") {

@@ -161,3 +161,23 @@ func GetCodebases(ctx context.Context, client *api.Client, url string) (*api.Cod
 	}
 	return client.DecodeCodebaseList(resp)
 }
+
+// GetWorkItemEvents make call on wit at endpoint /api/workitems/:workitem-id/events
+func GetWorkItemEvents(
+	ctx context.Context, client *api.Client, wiID uuid.UUID,
+) (*api.EventList, error) {
+	resp, err := client.ListWorkItemEvents(
+		goasupport.ForwardContextRequestID(ctx),
+		api.ListWorkItemEventsPath(wiID), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non %v status code for %v, returned %v",
+			http.StatusOK, "GET workitem events", resp.StatusCode)
+	}
+
+	return client.DecodeEventList(resp)
+}
